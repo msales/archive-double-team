@@ -16,6 +16,9 @@ const (
 	FlagLogLevel = "log.level"
 
 	FlagStats = "stats"
+
+	FlagKafkaBrokers = "kafka.brokers"
+	FlagKafkaRetry = "kafka.retry"
 )
 
 var commonFlags = []cli.Flag{
@@ -38,6 +41,17 @@ var commands = []cli.Command{
 		Name:  "server",
 		Usage: "Run the ren HTTP server",
 		Flags: append([]cli.Flag{
+			cli.StringSliceFlag{
+				Name: FlagKafkaBrokers,
+				Usage: "The kafka seed brokers.",
+				EnvVar: "DOUBLE_TEAM_KAFKA_BROKERS",
+			},
+			cli.IntFlag{
+				Name: FlagKafkaRetry,
+				Value: 5,
+				Usage: "The number of times to retry producing a message.",
+				EnvVar: "DOUBLE_TEAM_KAFKA_RETRY",
+			},
 			cli.StringFlag{
 				Name:   FlagPort,
 				Value:  "80",

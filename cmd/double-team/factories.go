@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/msales/double-team"
+	"github.com/msales/double-team/producer"
 	"github.com/msales/pkg/log"
 	"github.com/msales/pkg/stats"
 	"gopkg.in/inconshreveable/log15.v2"
@@ -12,10 +13,19 @@ import (
 
 // Application =============================
 
-func newApplication(c *Context) (*double_team.Application, error) {
-	app := double_team.NewApplication()
+func newApplication(c *Context, producers []producer.Producer) (*double_team.Application, error) {
+	app := double_team.NewApplication(c, producers)
 
 	return app, nil
+}
+
+// Producers ===============================
+
+func newKafkaProducer(c *Context) (producer.Producer, error) {
+	brokers := c.StringSlice(FlagKafkaBrokers)
+	retry := c.Int(FlagKafkaRetry)
+
+	return producer.NewKafkaProducer(brokers, retry)
 }
 
 // Logger ==================================
@@ -27,7 +37,7 @@ func newLogger(c *Context) (log15.Logger, error) {
 		return nil, err
 	}
 
-	h := log15.LvlFilterHandler(v, log15.StreamHandler(os.Stderr, log15.TerminalFormat()))
+	h := log15.LvlFilterHandler(v, log15.StreamHandler(os.Stderr, log15.LogfmtFormat()))
 	if lvl == "debug" {
 		h = log15.CallerFileHandler(h)
 	}
@@ -64,9 +74,9 @@ func newStats(c *Context) (stats.Stats, error) {
 }
 
 func newStatsdStats(addr string) (stats.Stats, error) {
-	return stats.NewStatsd(addr, "ren")
+	return stats.NewStatsd(addr, "double-team")
 }
 
 func newL2metStats(log log.Logger) stats.Stats {
-	return stats.NewL2met(log, "ren")
+	return stats.NewL2met(log, "double-team")
 }

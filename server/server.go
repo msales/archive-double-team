@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/go-zoo/bone"
@@ -8,6 +9,8 @@ import (
 
 // Application represents the main application.
 type Application interface {
+	// Send produces a message with fallback.
+	Send(topic string, data []byte)
 	// IsHealthy checks the health of the Application.
 	IsHealthy() error
 }
@@ -25,7 +28,7 @@ func New(app Application) *Server {
 		mux: bone.New(),
 	}
 
-	//s.mux.GetFunc("/:group/:file", s.ImageHandler)
+	s.mux.PostFunc("/", s.SendMessageHandler)
 
 	s.mux.GetFunc("/health", s.HealthHandler)
 	s.mux.NotFound(NotFoundHandler())
@@ -37,6 +40,31 @@ func New(app Application) *Server {
 // pattern most closely matches the request URL.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.mux.ServeHTTP(w, r)
+}
+
+type produceMessage struct {
+	Topic string          `json:"topic"`
+	Data  json.RawMessage `json:"data"`
+}
+
+// SendMessageHandler handles requests to send a message.
+func (s *Server) SendMessageHandler(w http.ResponseWriter, r *http.Request) {
+	msg := produceMessage{}
+
+	dec := json.NewDecoder(r.Body)
+	if err := dec.Decode(&msg); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	if msg.Topic == "" || len(msg.Data) == 0 {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	s.app.Send(msg.Topic, msg.Data)
+
+	w.WriteHeader(200);
 }
 
 // HealthHandler handles health requests.
