@@ -18,6 +18,7 @@ type kafkaProducer struct {
 
 func NewKafkaProducer(brokers []string, retry int) (Producer, error) {
 	config := sarama.NewConfig()
+	config.Metadata.RefreshFrequency = 30 * time.Second
 	config.Producer.RequiredAcks = sarama.WaitForLocal
 	config.Producer.Compression = sarama.CompressionSnappy
 	config.Producer.Flush.Frequency = 100 * time.Millisecond
@@ -73,7 +74,7 @@ func (p *kafkaProducer) Close() error {
 // IsHealthy checks the health of the Kafka cluster.
 func (p *kafkaProducer) IsHealthy() bool {
 	for _, b := range p.client.Brokers() {
-		if ok, _ := b.Connected(); ok {
+		if ok, err := b.Connected(); ok || err == nil {
 			return true
 		}
 	}
