@@ -19,6 +19,10 @@ const (
 
 	FlagKafkaBrokers = "kafka.brokers"
 	FlagKafkaRetry = "kafka.retry"
+
+	FlagS3Endpoint = "s3.endpoint"
+	FlagS3Region   = "s3.region"
+	FlagS3Bucket   = "s3.bucket"
 )
 
 var commonFlags = []cli.Flag{
@@ -51,6 +55,22 @@ var commands = []cli.Command{
 				Value: 5,
 				Usage: "The number of times to retry producing a message.",
 				EnvVar: "DOUBLE_TEAM_KAFKA_RETRY",
+			},
+			cli.StringFlag{
+				Name: FlagS3Endpoint,
+				Value: "",
+				Usage: "The s3 endpoint. Only set for testing.",
+				EnvVar: "DOUBLE_TEAM_S3_ENDPOINT",
+			},
+			cli.StringFlag{
+				Name: FlagS3Region,
+				Usage: "The s3 bucket region.",
+				EnvVar: "DOUBLE_TEAM_S3_REGION",
+			},
+			cli.StringFlag{
+				Name: FlagS3Bucket,
+				Usage: "The s3 bucket.",
+				EnvVar: "DOUBLE_TEAM_S3_BUCKET",
 			},
 			cli.StringFlag{
 				Name:   FlagPort,

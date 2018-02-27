@@ -1,5 +1,7 @@
 package producer
 
+type Messages []*Message
+
 type Message struct {
 	Topic string
 	Data  []byte

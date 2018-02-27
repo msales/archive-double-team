@@ -28,7 +28,12 @@ func runServer(c *cli.Context) {
 		log.Fatal(err.Error())
 	}
 
-	app, err := newApplication(ctx, []producer.Producer{kafkaProducer})
+	s3Producer, err := newS3Producer(ctx)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	app, err := newApplication(ctx, []producer.Producer{kafkaProducer, s3Producer})
 	if err != nil {
 		log.Fatal(err.Error())
 	}
