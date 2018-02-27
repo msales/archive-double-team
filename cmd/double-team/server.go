@@ -33,7 +33,7 @@ func runServer(c *cli.Context) {
 		log.Fatal(err.Error())
 	}
 
-	app, err := newApplication(ctx, []producer.Producer{kafkaProducer, s3Producer})
+	app, err := newApplication(ctx, []producer.Producer{kafkaProducer, s3Producer}, c.Int(FlagQueueSize))
 	if err != nil {
 		log.Fatal(err.Error())
 	}

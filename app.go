@@ -23,10 +23,10 @@ type Application struct {
 }
 
 // NewApplication creates an instance of Application.
-func NewApplication(ctx context.Context, producers []producer.Producer) *Application {
+func NewApplication(ctx context.Context, producers []producer.Producer, queueSize int) *Application {
 	app := &Application{
 		producers: producers,
-		messages:  make(chan *producer.Message, 1000),
+		messages:  make(chan *producer.Message, queueSize),
 	}
 
 	// Wire the producer chain
@@ -39,7 +39,7 @@ func NewApplication(ctx context.Context, producers []producer.Producer) *Applica
 			}
 		}(ch, p)
 
-		newCh := make(chan *producer.Message, 1000)
+		newCh := make(chan *producer.Message, queueSize)
 		ch = &newCh
 		go func(ch *chan *producer.Message, p producer.Producer) {
 			for err := range p.Errors() {

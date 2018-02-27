@@ -13,8 +13,8 @@ import (
 
 // Application =============================
 
-func newApplication(c *Context, producers []producer.Producer) (*double_team.Application, error) {
-	app := double_team.NewApplication(c, producers)
+func newApplication(c *Context, producers []producer.Producer, queueSize int) (*double_team.Application, error) {
+	app := double_team.NewApplication(c, producers, queueSize)
 
 	return app, nil
 }

@@ -17,6 +17,8 @@ const (
 
 	FlagStats = "stats"
 
+	FlagQueueSize = "queue"
+
 	FlagKafkaBrokers = "kafka.brokers"
 	FlagKafkaRetry = "kafka.retry"
 
@@ -45,6 +47,12 @@ var commands = []cli.Command{
 		Name:  "server",
 		Usage: "Run the ren HTTP server",
 		Flags: append([]cli.Flag{
+			cli.IntFlag{
+				Name:   FlagQueueSize,
+				Value:  1000,
+				Usage:  "The queue size of the message buffers.",
+				EnvVar: "DOUBLE_TEAM_QUEUE",
+			},
 			cli.StringSliceFlag{
 				Name: FlagKafkaBrokers,
 				Usage: "The kafka seed brokers.",
