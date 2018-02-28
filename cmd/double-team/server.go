@@ -14,6 +14,7 @@ import (
 	"github.com/msales/double-team/producer"
 	"github.com/msales/double-team/server"
 	"github.com/msales/double-team/server/middleware"
+	"github.com/msales/pkg/stats"
 	"gopkg.in/urfave/cli.v1"
 )
 
@@ -22,6 +23,8 @@ func runServer(c *cli.Context) {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+
+	go stats.Runtime(ctx.stats)
 
 	kafkaProducer, err := newKafkaProducer(ctx)
 	if err != nil {

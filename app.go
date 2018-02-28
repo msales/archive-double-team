@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/msales/double-team/producer"
 	"github.com/msales/pkg/log"
@@ -20,6 +21,8 @@ func (ae applicationErrors) Error() string {
 type Application struct {
 	producers []producer.Producer
 	messages  chan *producer.Message
+
+	statsTimer *time.Ticker
 }
 
 // NewApplication creates an instance of Application.
@@ -29,9 +32,12 @@ func NewApplication(ctx context.Context, producers []producer.Producer, queueSiz
 		messages:  make(chan *producer.Message, queueSize),
 	}
 
+	channels := map[string]*chan *producer.Message{}
+
 	// Wire the producer chain
 	ch := &app.messages
 	for _, p := range app.producers {
+		channels[p.Name()] = ch
 		go func(ch *chan *producer.Message, p producer.Producer) {
 			for msg := range *ch {
 				p.Input() <- msg
@@ -59,6 +65,16 @@ func NewApplication(ctx context.Context, producers []producer.Producer, queueSiz
 			stats.Inc(ctx, "produced", 1, 1.0, map[string]string{"queue": "black-hole"})
 		}
 	}(ch)
+
+	app.statsTimer = time.NewTicker(1 * time.Second)
+	go func() {
+		for range app.statsTimer.C {
+			for k, ch := range channels {
+				stats.Gauge(ctx, "queue_length", float64(len(*ch)), 1.0, map[string]string{"queue": k})
+				stats.Gauge(ctx, "queue_length_max", float64(cap(*ch)), 1.0, map[string]string{"queue": k})
+			}
+		}
+	}()
 
 	return app
 }

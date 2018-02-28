@@ -37,8 +37,8 @@
     "service/s3",
     "service/sts"
   ]
-  revision = "f3a52638aeadcd5d6ba1d747b8c552c8e0066312"
-  version = "v1.13.5"
+  revision = "ce48e67ca697079662aee65a13202f37a185962b"
+  version = "v1.13.6"
 
 [[projects]]
   name = "github.com/cactus/go-statsd-client"
@@ -127,8 +127,8 @@
     "log",
     "stats"
   ]
-  revision = "aeee457e8b55d5b0cc30c31a39d16a3807022c39"
-  version = "v1.7.0"
+  revision = "5dc0cb0b7879a26bf363bda24b67b3c4e917fd1d"
+  version = "v1.7.1"
 
 [[projects]]
   name = "github.com/pierrec/lz4"
@@ -158,7 +158,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "c1138c84af3a9927aee1a1b8b7ce06c9b7ea52bc"
+  revision = "f6cff0780e542efa0c8e864dc8fa522808f6a598"
 
 [[projects]]
   name = "gopkg.in/inconshreveable/log15.v2"
@@ -175,6 +175,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "fde265661e425ba0e82b20ba9e2ee4224d880b78b4e24d23005f9514f37ed9bd"
+  inputs-digest = "0930ca97045747e9e0fbb313f551400767f3eea517123acf74ef338c22ae95a1"
   solver-name = "gps-cdcl"
   solver-version = 1

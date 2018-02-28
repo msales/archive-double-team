@@ -21,7 +21,7 @@ func NewKafkaProducer(brokers []string, retry int) (Producer, error) {
 	config.Metadata.RefreshFrequency = 30 * time.Second
 	config.Producer.RequiredAcks = sarama.WaitForLocal
 	config.Producer.Compression = sarama.CompressionSnappy
-	config.Producer.Flush.Frequency = 100 * time.Millisecond
+	config.Producer.Flush.Frequency = 500 * time.Millisecond
 	config.Producer.Retry.Max = retry
 	config.Producer.Retry.Backoff = 10 * time.Millisecond
 

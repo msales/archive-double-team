@@ -52,10 +52,10 @@ func NewS3Producer(endpoint, region, bucket string) (Producer, error) {
 		client:         s3.New(sess),
 		bucket:         bucket,
 		input:          make(chan *Message),
-		output:         make(chan Messages),
+		output:         make(chan Messages, 10),
 		errors:         make(chan *Error),
 		FlushMessages:  20000,
-		FlushFrequency: 500 * time.Millisecond,
+		FlushFrequency: 5 * time.Second,
 	}
 
 	go p.dispatchMessages()

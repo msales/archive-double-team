@@ -1,6 +1,6 @@
 [[constraint]]
   name = "github.com/msales/pkg"
-  version = "^1.7.0"
+  version = "1.*"
 
 [[constraint]]
   name = "github.com/Shopify/sarama"
