@@ -59,7 +59,9 @@ func runServer(c *cli.Context) {
 	// Close the server
 	ctxServer, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	h.Shutdown(ctxServer)
+	if err := h.Shutdown(ctxServer); err != nil {
+		ctx.logger.Error(err.Error())
+	}
 	ctx.logger.Info("Draining queues")
 
 	// Close the application

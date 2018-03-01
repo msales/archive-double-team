@@ -5,15 +5,17 @@ import (
 	"time"
 
 	"github.com/Shopify/sarama"
+	"github.com/msales/double-team/pkg/breaker"
 )
 
 type kafkaProducer struct {
 	client   sarama.Client
 	producer sarama.AsyncProducer
 
-	input  chan *Message
-	errors chan *Error
-	wg     sync.WaitGroup
+	breaker *breaker.Breaker
+	input   chan *Message
+	errors  chan *Error
+	wg      sync.WaitGroup
 }
 
 func NewKafkaProducer(brokers []string, retry int) (Producer, error) {
@@ -38,8 +40,9 @@ func NewKafkaProducer(brokers []string, retry int) (Producer, error) {
 	p := &kafkaProducer{
 		client:   client,
 		producer: producer,
+		breaker:  breaker.New(5, 1*time.Second),
 		input:    make(chan *Message),
-		errors:   make(chan *Error),
+		errors:   make(chan *Error, 100),
 	}
 
 	go p.dispatchMessages()
@@ -61,14 +64,16 @@ func (p *kafkaProducer) Errors() <-chan *Error {
 }
 
 func (p *kafkaProducer) Close() error {
-	p.producer.AsyncClose()
+	close(p.input)
 
+	p.producer.AsyncClose()
 	p.wg.Wait()
 
-	close(p.input)
+	err := p.client.Close()
+
 	close(p.errors)
 
-	return p.client.Close()
+	return err
 }
 
 // IsHealthy checks the health of the Kafka cluster.
@@ -84,9 +89,18 @@ func (p *kafkaProducer) IsHealthy() bool {
 
 func (p *kafkaProducer) dispatchMessages() {
 	for msg := range p.input {
-		p.producer.Input() <- &sarama.ProducerMessage{
-			Topic: msg.Topic,
-			Value: sarama.ByteEncoder(msg.Data),
+		err := p.breaker.Run(func() {
+			p.producer.Input() <- &sarama.ProducerMessage{
+				Topic: msg.Topic,
+				Value: sarama.ByteEncoder(msg.Data),
+			}
+		})
+
+		if err != nil {
+			p.errors <- &Error{
+				Msgs: Messages{msg},
+				Err:  err,
+			}
 		}
 	}
 }
@@ -95,8 +109,9 @@ func (p *kafkaProducer) dispatchErrors() {
 	p.wg.Add(1)
 
 	for err := range p.producer.Errors() {
+		p.breaker.Error()
 		p.errors <- &Error{
-			Msgs: []*Message{
+			Msgs: Messages{
 				{
 					Topic: err.Msg.Topic,
 					Data:  err.Msg.Value.(sarama.ByteEncoder),

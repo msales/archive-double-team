@@ -14,7 +14,7 @@ import (
 type applicationErrors []error
 
 func (ae applicationErrors) Error() string {
-	return fmt.Sprintf("app: Failed to close %d producers.", len(ae))
+	return fmt.Sprintf("app: Failed to close %d producers cleanly.", len(ae))
 }
 
 // Application represents the application.
@@ -23,13 +23,16 @@ type Application struct {
 	messages  chan *producer.Message
 
 	statsTimer *time.Ticker
+
+	closeErrors chan error
 }
 
 // NewApplication creates an instance of Application.
 func NewApplication(ctx context.Context, producers []producer.Producer, queueSize int) *Application {
 	app := &Application{
-		producers: producers,
-		messages:  make(chan *producer.Message, queueSize),
+		producers:   producers,
+		messages:    make(chan *producer.Message, queueSize),
+		closeErrors: make(chan error),
 	}
 
 	channels := map[string]*chan *producer.Message{}
@@ -43,6 +46,8 @@ func NewApplication(ctx context.Context, producers []producer.Producer, queueSiz
 				p.Input() <- msg
 				stats.Inc(ctx, "produced", 1, 1.0, map[string]string{"queue": p.Name()})
 			}
+
+			app.closeErrors <- p.Close()
 		}(ch, p)
 
 		newCh := make(chan *producer.Message, queueSize)
@@ -64,6 +69,7 @@ func NewApplication(ctx context.Context, producers []producer.Producer, queueSiz
 		for _ = range *ch {
 			stats.Inc(ctx, "produced", 1, 1.0, map[string]string{"queue": "black-hole"})
 		}
+		close(app.closeErrors)
 	}(ch)
 
 	app.statsTimer = time.NewTicker(1 * time.Second)
@@ -92,8 +98,8 @@ func (a *Application) Close() error {
 	close(a.messages)
 
 	var errs applicationErrors
-	for _, p := range a.producers {
-		if err := p.Close(); err != nil {
+	for err := range a.closeErrors {
+		if err != nil {
 			errs = append(errs, err)
 		}
 	}
