@@ -129,7 +129,7 @@ func (p *s3Producer) dispatchMessages() {
 
 		}
 
-		if len(p.buffer) > p.FlushMessages || p.timerFired {
+		if len(p.buffer) >= p.FlushMessages || p.timerFired {
 			p.output <- p.buffer
 			p.buffer = newMessageBuffer(p.FlushMessages)
 			p.timer = nil
