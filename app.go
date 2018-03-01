@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/msales/double-team/producer"
-	"github.com/msales/pkg/log"
 	"github.com/msales/pkg/stats"
 )
 
@@ -58,7 +57,6 @@ func NewApplication(ctx context.Context, producers []producer.Producer, queueSiz
 					*ch <- msg
 					stats.Inc(ctx, "error", 1, 1.0, map[string]string{"queue": p.Name()})
 				}
-				log.Error(ctx, "app: error producing message", "queue", p.Name(), "error", err.Err.Error())
 			}
 			close(*ch)
 		}(ch, p)
