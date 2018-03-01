@@ -24,7 +24,7 @@ The Double-Team server `./double-team server` can be configured with the followi
 | --s3.endpoint | | No | The S3 endpoint to use. This is mainly for debugging. | DOUBLE_TEAM_S3_ENDPOINT |
 | --s3.region | | No | The S3 region the bucket exists in. | DOUBLE_TEAM_S3_REGION |
 | --s3.bucket | | No | The S3 bucket to write messages 2 | DOUBLE_TEAM_S3_BUCKET |
-| --port | | No | The address to bind to for the http server. | KAGE_PORT |
+| --port | | No | The address to bind to for the http server. | DOUBLE_TEAM_PORT |
 
 ## Server HTTP Endpoints
 
@@ -42,4 +42,4 @@ Accepts a JSON payload with the message topic and data.
 
 #### GET /health
 
-Gets the current health status of the server. Returns a 200 status code if Kage is healthy, otherwise a 503 status code
+Gets the current health status of the server. Returns a 200 status code if the server is healthy, otherwise a 503 status code
