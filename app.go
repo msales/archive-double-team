@@ -1,4 +1,4 @@
-package double_team
+package doubleteam
 
 import (
 	"context"

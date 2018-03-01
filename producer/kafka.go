@@ -18,6 +18,7 @@ type kafkaProducer struct {
 	wg      sync.WaitGroup
 }
 
+// NewKafkaProducer creates a new producer that sends messages to Kafka.
 func NewKafkaProducer(brokers []string, retry int) (Producer, error) {
 	config := sarama.NewConfig()
 	config.Metadata.RefreshFrequency = 30 * time.Second
@@ -51,18 +52,22 @@ func NewKafkaProducer(brokers []string, retry int) (Producer, error) {
 	return p, nil
 }
 
+// Name is the name of the producer.
 func (p *kafkaProducer) Name() string {
 	return "kafka"
 }
 
+// Input is the message input channel.
 func (p *kafkaProducer) Input() chan<- *Message {
 	return p.input
 }
 
+// Errors is the error output channel.
 func (p *kafkaProducer) Errors() <-chan *Error {
 	return p.errors
 }
 
+// Close closes the producer.
 func (p *kafkaProducer) Close() error {
 	close(p.input)
 
@@ -76,7 +81,7 @@ func (p *kafkaProducer) Close() error {
 	return err
 }
 
-// IsHealthy checks the health of the Kafka cluster.
+// IsHealthy checks the health of the producer.
 func (p *kafkaProducer) IsHealthy() bool {
 	for _, b := range p.client.Brokers() {
 		if ok, err := b.Connected(); ok || err == nil {

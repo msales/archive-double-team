@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// ErrBreakerOpen is the error returned from Run() when the breaker is open.
 var ErrBreakerOpen = errors.New("breaker: circuit breaker is open")
 
 const (
@@ -14,6 +15,7 @@ const (
 	open
 )
 
+// Breaker implements the circuit-breaker pattern.
 type Breaker struct {
 	errorThreshold int
 	timeout        time.Duration
@@ -24,6 +26,7 @@ type Breaker struct {
 	lastError time.Time
 }
 
+// New creates a new Breaker.
 func New(errorThreshold int, timeout time.Duration) *Breaker {
 	return &Breaker{
 		errorThreshold: errorThreshold,
@@ -31,6 +34,8 @@ func New(errorThreshold int, timeout time.Duration) *Breaker {
 	}
 }
 
+// Run will run the given function or return ErrBreakerOpen immediately
+// if the circuit-breaker is open.
 func (b *Breaker) Run(fn func()) error {
 	state := atomic.LoadUint32(&b.state)
 
@@ -42,6 +47,7 @@ func (b *Breaker) Run(fn func()) error {
 	return nil
 }
 
+// Error registers an error with the circuit-breaker, potentially opening the breaker.
 func (b *Breaker) Error() {
 	b.lock.Lock()
 	defer b.lock.Unlock()

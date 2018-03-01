@@ -72,7 +72,7 @@ func runServer(c *cli.Context) {
 	ctx.logger.Info("Server stopped gracefully")
 }
 
-func newServer(ctx *Context, app *double_team.Application) http.Handler {
+func newServer(ctx *Context, app *doubleteam.Application) http.Handler {
 	s := server.New(app)
 
 	h := middleware.Common(s)

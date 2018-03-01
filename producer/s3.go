@@ -31,6 +31,7 @@ type s3Producer struct {
 	FlushFrequency time.Duration
 }
 
+// NewS3Producer creates a producer that sends messages to AWS S3.
 func NewS3Producer(endpoint, region, bucket string) (Producer, error) {
 	// Configure to use Minio Server
 	config := &aws.Config{
@@ -64,18 +65,22 @@ func NewS3Producer(endpoint, region, bucket string) (Producer, error) {
 	return p, nil
 }
 
+// Name is the name of the producer.
 func (p *s3Producer) Name() string {
 	return "s3"
 }
 
+// Input is the message input channel.
 func (p *s3Producer) Input() chan<- *Message {
 	return p.input
 }
 
+// Errors is the error output channel.
 func (p *s3Producer) Errors() <-chan *Error {
 	return p.errors
 }
 
+// Close closes the producer.
 func (p *s3Producer) Close() error {
 	close(p.input)
 	p.inputWg.Wait()
@@ -94,7 +99,7 @@ func (p *s3Producer) Close() error {
 	return nil
 }
 
-// IsHealthy checks the health of the S3.
+// IsHealthy checks the health of the producer.
 func (p *s3Producer) IsHealthy() bool {
 	return true
 }
