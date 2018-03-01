@@ -7,12 +7,15 @@ go:
 before_install:
   - go get -u github.com/golang/dep/cmd/dep github.com/golang/lint/golint
   - go get github.com/mitchellh/gox
+  - go get github.com/mattn/goveralls
+  - go get golang.org/x/tools/cmd/cover
 
 script:
   - dep ensure
   - golint $(go list ./... | grep -v /vendor/)
   - go vet ./...
   - go test -cover ./...
+  - $HOME/gopath/bin/goveralls -service=travis-ci
 
 before_deploy:
   - gox -os "linux darwin" -arch "386 amd64" -output "dist/{{.Dir}}_{{.OS}}_{{.Arch}}" ./cmd/double-team/
@@ -28,4 +31,6 @@ deploy:
 
 
 notifications:
-  email: false
+  email:
+    on_success: never
+    on_failure: always
