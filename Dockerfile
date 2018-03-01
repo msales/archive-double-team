@@ -1,7 +1,7 @@
 # Build container
 FROM golang:1.10 as builder
 
-RUN go get -u github.com/golang/dep/cmd/dep
+RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 
 WORKDIR /go/src/github.com/msales/double-team/
 COPY ./ .

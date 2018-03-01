@@ -45,7 +45,7 @@ var commonFlags = []cli.Flag{
 var commands = []cli.Command{
 	{
 		Name:  "server",
-		Usage: "Run the ren HTTP server",
+		Usage: "Run the HTTP server",
 		Flags: append([]cli.Flag{
 			cli.IntFlag{
 				Name:   FlagQueueSize,
@@ -94,7 +94,7 @@ var commands = []cli.Command{
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "ren"
+	app.Name = "double-team"
 	app.Version = Version
 	app.Commands = commands
 
