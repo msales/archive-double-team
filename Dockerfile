@@ -7,7 +7,7 @@ WORKDIR /go/src/github.com/msales/double-team/
 COPY ./ .
 RUN dep ensure
 
-RUN CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-s' -o ren ./cmd/double-team
+RUN CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-s' -o double-team ./cmd/double-team
 
 # Run container
 FROM scratch
