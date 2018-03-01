@@ -36,12 +36,11 @@ func NewS3Producer(endpoint, region, bucket string) (Producer, error) {
 	// Configure to use Minio Server
 	config := &aws.Config{
 		Region:           aws.String(region),
-		DisableSSL:       aws.Bool(true),
-		S3ForcePathStyle: aws.Bool(true),
 	}
 	if endpoint != "" {
 		config.Endpoint = aws.String(endpoint)
 		config.DisableSSL = aws.Bool(!strings.Contains(endpoint, "https"))
+		config.S3ForcePathStyle = aws.Bool(true)
 	}
 
 	sess, err := session.NewSession(config)
