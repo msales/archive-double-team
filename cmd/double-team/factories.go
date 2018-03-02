@@ -36,6 +36,14 @@ func newS3Producer(c *Context) (producer.Producer, error) {
 	return producer.NewS3Producer(endpoint, region, bucket)
 }
 
+func newS3Consumer(c *Context) (producer.Consumer, error) {
+	endpoint := c.String(FlagS3Endpoint)
+	region := c.String(FlagS3Region)
+	bucket := c.String(FlagS3Bucket)
+
+	return producer.NewS3Consumer(endpoint, region, bucket)
+}
+
 // Logger ==================================
 
 func newLogger(c *Context) (log15.Logger, error) {

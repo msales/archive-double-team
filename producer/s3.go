@@ -11,6 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/segmentio/ksuid"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/apex/log"
 )
 
 type s3Producer struct {
@@ -170,4 +172,100 @@ func (p *s3Producer) dispatchFiles() {
 
 func newMessageBuffer(cap int) []*Message {
 	return make([]*Message, 0, cap)
+}
+
+
+
+
+type s3Consumer struct {
+	sess *session.Session
+	client *s3.S3
+	bucket string
+}
+
+// NewS3Producer creates a producer that sends messages to AWS S3.
+func NewS3Consumer(endpoint, region, bucket string) (Consumer, error) {
+	// Configure to use Minio Server
+	config := &aws.Config{
+		Region:           aws.String(region),
+	}
+	if endpoint != "" {
+		config.Endpoint = aws.String(endpoint)
+		config.DisableSSL = aws.Bool(!strings.Contains(endpoint, "https"))
+		config.S3ForcePathStyle = aws.Bool(true)
+	}
+
+	sess, err := session.NewSession(config)
+	if err != nil {
+		return nil, err
+	}
+
+	c := &s3Consumer{
+		sess: sess,
+		client: s3.New(sess),
+		bucket: bucket,
+	}
+
+	return c, nil
+}
+
+func (c *s3Consumer) Output(t time.Time) <-chan Messages {
+	ch := make(chan Messages, 10)
+
+	go func() {
+		resp, err := c.client.ListObjects(&s3.ListObjectsInput{Bucket: aws.String(c.bucket)})
+		if err != nil {
+			log.Info(c.bucket + " // failed to list objects")
+			return
+		}
+
+		// loop bucket objects
+		for _, item := range resp.Contents {
+			if item.LastModified.After(t) || item.LastModified.Equal(t) { // FIXME easier?
+				log.Info(c.bucket + " // " + *item.Key + " // skipping due to modification time")
+				continue
+			}
+			if item.Size == aws.Int64(0) {
+				log.Info(c.bucket + " // " + *item.Key + " // skipping due to file size")
+				continue
+			}
+			downloader := s3manager.NewDownloader(c.sess)
+
+			w := &aws.WriteAtBuffer{}
+			_, err := downloader.Download(w, &s3.GetObjectInput{Bucket: aws.String(c.bucket), Key: item.Key})
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			}
+
+			b := w.Bytes()
+			msgs := Messages{}
+			err = json.Unmarshal(b, &msgs)
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			}
+
+			_, err = c.client.DeleteObject(&s3.DeleteObjectInput{Bucket: aws.String(c.bucket), Key: item.Key})
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			}
+			log.Info(c.bucket + " // " + *item.Key + " // done")
+
+			ch <- msgs
+		}
+
+		close(ch)
+	}()
+
+	return ch
+}
+
+func (c *s3Consumer) Close() error {
+	return nil
+}
+
+func (c *s3Consumer) IsHealthy() bool {
+	return true
 }
