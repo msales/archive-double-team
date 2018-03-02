@@ -1,5 +1,7 @@
 package producer
 
+import "time"
+
 // Messages is an array of messages.
 type Messages []*Message
 
@@ -27,5 +29,15 @@ type Producer interface {
 	// Close closes the producer.
 	Close() error
 	// IsHealthy checks the health of the producer.
+	IsHealthy() bool
+}
+
+// Consumer represents a class that can consume messages.
+type Consumer interface {
+	// Input is the message input channel.
+	Output(endTime time.Time) <-chan Messages
+	// Close closes the producer.
+	Close() error
+	// IsHealthy checks the health of the Consumer.
 	IsHealthy() bool
 }
