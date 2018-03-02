@@ -49,6 +49,11 @@ type produceMessage struct {
 
 // SendMessageHandler handles requests to send a message.
 func (s *Server) SendMessageHandler(w http.ResponseWriter, r *http.Request) {
+	if err := s.app.IsHealthy(); err != nil {
+		http.Error(w, http.StatusText(http.StatusServiceUnavailable), http.StatusServiceUnavailable)
+		return
+	}
+
 	msg := produceMessage{}
 
 	dec := json.NewDecoder(r.Body)
