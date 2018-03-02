@@ -3,6 +3,7 @@ package doubleteam
 import (
 	"context"
 	"fmt"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -26,13 +27,14 @@ type Application struct {
 
 	statsTimer *time.Ticker
 
-	errorCount  int64
-	unhealthy   bool
-	closeErrors chan error
+	errorCount    int64
+	unhealthy     bool
+	closeErrors   chan error
 }
 
 // NewApplication creates an instance of Application.
 func NewApplication(ctx context.Context, producers []producer.Producer, queueSize int) *Application {
+	closeMutex := sync.WaitGroup{}
 	app := &Application{
 		producers:   producers,
 		messages:    make(chan *producer.Message, queueSize),
@@ -51,7 +53,9 @@ func NewApplication(ctx context.Context, producers []producer.Producer, queueSiz
 				stats.Inc(ctx, "produced", 1, 1.0, map[string]string{"queue": p.Name()})
 			}
 
+			closeMutex.Add(1)
 			app.closeErrors <- p.Close()
+			closeMutex.Done()
 		}(ch, p)
 
 		newCh := make(chan *producer.Message, queueSize)
@@ -73,6 +77,8 @@ func NewApplication(ctx context.Context, producers []producer.Producer, queueSiz
 			atomic.AddInt64(&app.errorCount, 1)
 			stats.Inc(ctx, "produced", 1, 1.0, map[string]string{"queue": "black-hole"})
 		}
+
+		closeMutex.Wait()
 		close(app.closeErrors)
 	}(ch)
 
