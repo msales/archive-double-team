@@ -2,12 +2,13 @@ package doubleteam
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"sync/atomic"
 	"time"
 
 	"github.com/msales/double-team/producer"
 	"github.com/msales/pkg/stats"
+	"github.com/pkg/errors"
 )
 
 type applicationErrors []error
@@ -16,6 +17,8 @@ func (ae applicationErrors) Error() string {
 	return fmt.Sprintf("app: Failed to close %d producers cleanly.", len(ae))
 }
 
+var errUnhealthy = errors.New("app: service unhealthy")
+
 // Application represents the application.
 type Application struct {
 	producers []producer.Producer
@@ -23,6 +26,8 @@ type Application struct {
 
 	statsTimer *time.Ticker
 
+	errorCount  int64
+	unhealthy   bool
 	closeErrors chan error
 }
 
@@ -65,6 +70,7 @@ func NewApplication(ctx context.Context, producers []producer.Producer, queueSiz
 	// Wire the black-hole
 	go func(ch *chan *producer.Message) {
 		for _ = range *ch {
+			atomic.AddInt64(&app.errorCount, 1)
 			stats.Inc(ctx, "produced", 1, 1.0, map[string]string{"queue": "black-hole"})
 		}
 		close(app.closeErrors)
@@ -110,10 +116,14 @@ func (a *Application) Close() error {
 
 // IsHealthy checks the health of the Application.
 func (a *Application) IsHealthy() error {
-	for _, p := range a.producers {
-		if ok := p.IsHealthy(); !ok {
-			return errors.New("unhealthy producer")
-		}
+	if a.unhealthy {
+		return errUnhealthy
+	}
+
+	errs := atomic.LoadInt64(&a.errorCount)
+	if errs > 0 {
+		a.unhealthy = true
+		return errUnhealthy
 	}
 
 	return nil
