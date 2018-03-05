@@ -35,7 +35,7 @@ type Producer interface {
 // Consumer represents a class that can consume messages.
 type Consumer interface {
 	// Input is the message input channel.
-	Output(endTime time.Time) <-chan Messages
+	Output(endTime time.Time) (<-chan Messages, <-chan error)
 	// Close closes the producer.
 	Close() error
 	// IsHealthy checks the health of the Consumer.

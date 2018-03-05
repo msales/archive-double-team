@@ -41,13 +41,21 @@ func runRecovery(c *cli.Context) {
 
 	ctx.logger.Info("Starting recovery process")
 
-	for msgs := range s3Consumer.Output(time.Now()) {
+	messages, errs := s3Consumer.Output(time.Now())
+	go func() {
+		for err := range errs {
+			ctx.logger.Error(err.Error())
+		}
+	}()
+
+	for msgs := range messages {
 		for _, msg := range msgs {
 			app.Send(msg.Topic, msg.Data)
+			stats.Inc(ctx, "recovered", 1, 1.0, map[string]string{})
 		}
 
 		if err := shouldContinue(app, kafkaProducer); err != nil {
-			log.Fatal(err)
+			break
 		}
 	}
 
