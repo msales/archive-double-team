@@ -5,13 +5,13 @@ import (
 	"time"
 
 	"github.com/msales/double-team"
-	"github.com/msales/double-team/producer"
+	"github.com/msales/double-team/streaming"
 	"github.com/msales/pkg/stats"
 	"gopkg.in/urfave/cli.v1"
 	"github.com/pkg/errors"
 )
 
-func runRecovery(c *cli.Context) {
+func runRestore(c *cli.Context) {
 	ctx, err := newContext(c)
 	if err != nil {
 		log.Fatal(err.Error())
@@ -29,7 +29,7 @@ func runRecovery(c *cli.Context) {
 		log.Fatal(err.Error())
 	}
 
-	app, err := newApplication(ctx, []producer.Producer{kafkaProducer, s3Producer}, c.Int(FlagQueueSize))
+	app, err := newApplication(ctx, []streaming.Producer{kafkaProducer, s3Producer}, c.Int(FlagQueueSize))
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -39,7 +39,7 @@ func runRecovery(c *cli.Context) {
 		log.Fatal(err.Error())
 	}
 
-	ctx.logger.Info("Starting recovery process")
+	ctx.logger.Info("Starting restore process")
 
 	messages, errs := s3Consumer.Output(time.Now())
 	go func() {
@@ -51,7 +51,7 @@ func runRecovery(c *cli.Context) {
 	for msgs := range messages {
 		for _, msg := range msgs {
 			app.Send(msg.Topic, msg.Data)
-			stats.Inc(ctx, "recovered", 1, 1.0, map[string]string{})
+			stats.Inc(ctx, "consumed", 1, 1.0, map[string]string{})
 		}
 
 		if err := shouldContinue(app, kafkaProducer); err != nil {
@@ -69,7 +69,7 @@ func runRecovery(c *cli.Context) {
 	ctx.logger.Info("Done")
 }
 
-func shouldContinue(app *doubleteam.Application, p producer.Producer) error {
+func shouldContinue(app *doubleteam.Application, p streaming.Producer) error {
 	if err := app.IsHealthy(); err != nil {
 		return err
 	}

@@ -6,19 +6,19 @@ import (
 	"time"
 
 	"github.com/msales/double-team"
-	"github.com/msales/double-team/producer"
+	"github.com/msales/double-team/streaming"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSendsMessageToProducer(t *testing.T) {
 	count := 0
-	p := newFuncProducer(func(m *producer.Message) {
+	p := newFuncProducer(func(m *streaming.Message) {
 		count++
 		assert.Equal(t, "test", m.Topic)
 		assert.Equal(t, "test", string(m.Data))
 	})
-	app := doubleteam.NewApplication(context.Background(), []producer.Producer{p}, 1)
+	app := doubleteam.NewApplication(context.Background(), []streaming.Producer{p}, 1)
 	defer app.Close()
 
 	app.Send("test", []byte("test"))
@@ -31,7 +31,7 @@ func TestSendsMessageToProducer(t *testing.T) {
 
 func TestIsUnhealthyIfRecordsAreBlackHoled(t *testing.T) {
 	p := newErrorProducer()
-	app := doubleteam.NewApplication(context.Background(), []producer.Producer{p}, 1)
+	app := doubleteam.NewApplication(context.Background(), []streaming.Producer{p}, 1)
 	defer app.Close()
 
 	err := app.IsHealthy()
@@ -51,27 +51,27 @@ func TestIsUnhealthyIfRecordsAreBlackHoled(t *testing.T) {
 
 func TestCloseReturnsProducerErrors(t *testing.T) {
 	p := newErrorProducer()
-	app := doubleteam.NewApplication(context.Background(), []producer.Producer{p}, 1)
+	app := doubleteam.NewApplication(context.Background(), []streaming.Producer{p}, 1)
 
 	err := app.Close()
 	assert.Error(t, err)
 }
 
 type errorProducer struct {
-	input  chan *producer.Message
-	errors chan *producer.Error
+	input  chan *streaming.Message
+	errors chan *streaming.Error
 }
 
-func newErrorProducer() (producer.Producer) {
+func newErrorProducer() (streaming.Producer) {
 	p := &errorProducer{
-		input:  make(chan *producer.Message),
-		errors: make(chan *producer.Error),
+		input:  make(chan *streaming.Message),
+		errors: make(chan *streaming.Error),
 	}
 
 	go func() {
 		for msg := range p.input {
-			p.errors <- &producer.Error{
-				Msgs: producer.Messages{msg},
+			p.errors <- &streaming.Error{
+				Msgs: streaming.Messages{msg},
 				Err:  errors.New("test"),
 			}
 		}
@@ -84,11 +84,11 @@ func (p *errorProducer) Name() string {
 	return "error-producer"
 }
 
-func (p *errorProducer) Input() chan<- *producer.Message {
+func (p *errorProducer) Input() chan<- *streaming.Message {
 	return p.input
 }
 
-func (p *errorProducer) Errors() <-chan *producer.Error {
+func (p *errorProducer) Errors() <-chan *streaming.Error {
 	return p.errors
 }
 
@@ -104,14 +104,14 @@ func (p *errorProducer) IsHealthy() bool {
 }
 
 type funcProducer struct {
-	input  chan *producer.Message
-	errors chan *producer.Error
+	input  chan *streaming.Message
+	errors chan *streaming.Error
 }
 
-func newFuncProducer(fn func(message *producer.Message)) (producer.Producer) {
+func newFuncProducer(fn func(message *streaming.Message)) (streaming.Producer) {
 	p := &errorProducer{
-		input:  make(chan *producer.Message),
-		errors: make(chan *producer.Error),
+		input:  make(chan *streaming.Message),
+		errors: make(chan *streaming.Error),
 	}
 
 	go func() {
@@ -127,11 +127,11 @@ func (p *funcProducer) Name() string {
 	return "error-producer"
 }
 
-func (p *funcProducer) Input() chan<- *producer.Message {
+func (p *funcProducer) Input() chan<- *streaming.Message {
 	return p.input
 }
 
-func (p *funcProducer) Errors() <-chan *producer.Error {
+func (p *funcProducer) Errors() <-chan *streaming.Error {
 	return p.errors
 }
 
