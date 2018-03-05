@@ -1,4 +1,4 @@
-package producer
+package streaming
 
 import (
 	"bytes"
@@ -173,16 +173,13 @@ func newMessageBuffer(cap int) []*Message {
 	return make([]*Message, 0, cap)
 }
 
-
-
-
 type s3Consumer struct {
 	sess *session.Session
 	client *s3.S3
 	bucket string
 }
 
-// NewS3Producer creates a producer that sends messages to AWS S3.
+// NewS3Consumer creates a consumer that gets messages to AWS S3.
 func NewS3Consumer(endpoint, region, bucket string) (Consumer, error) {
 	// Configure to use Minio Server
 	config := &aws.Config{
@@ -208,6 +205,7 @@ func NewS3Consumer(endpoint, region, bucket string) (Consumer, error) {
 	return c, nil
 }
 
+// Output gets messages until the given date.
 func (c *s3Consumer) Output(t time.Time) (<-chan Messages, <-chan error) {
 	ch := make(chan Messages, 10)
 	errors := make(chan error, 10)

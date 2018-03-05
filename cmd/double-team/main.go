@@ -91,8 +91,8 @@ var commands = []cli.Command{
 		Action: runServer,
 	},
 	{
-		Name:  "recovery",
-		Usage: "Recover from S3",
+		Name:  "restore",
+		Usage: "Restore from S3",
 		Flags: append([]cli.Flag{
 			cli.IntFlag{
 				Name:   FlagQueueSize,
@@ -129,7 +129,7 @@ var commands = []cli.Command{
 			},
 
 		}, commonFlags...),
-		Action: runRecovery,
+		Action: runRestore,
 	},
 }
 

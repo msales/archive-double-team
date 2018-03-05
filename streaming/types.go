@@ -1,4 +1,4 @@
-package producer
+package streaming
 
 import "time"
 
@@ -34,7 +34,7 @@ type Producer interface {
 
 // Consumer represents a class that can consume messages.
 type Consumer interface {
-	// Input is the message input channel.
+	// Output gets messages until the given date.
 	Output(endTime time.Time) (<-chan Messages, <-chan error)
 	// Close closes the producer.
 	Close() error

@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/msales/double-team"
-	"github.com/msales/double-team/producer"
+	"github.com/msales/double-team/streaming"
 	"github.com/msales/pkg/log"
 	"github.com/msales/pkg/stats"
 	"gopkg.in/inconshreveable/log15.v2"
@@ -13,7 +13,7 @@ import (
 
 // Application =============================
 
-func newApplication(c *Context, producers []producer.Producer, queueSize int) (*doubleteam.Application, error) {
+func newApplication(c *Context, producers []streaming.Producer, queueSize int) (*doubleteam.Application, error) {
 	app := doubleteam.NewApplication(c, producers, queueSize)
 
 	return app, nil
@@ -21,27 +21,27 @@ func newApplication(c *Context, producers []producer.Producer, queueSize int) (*
 
 // Producers ===============================
 
-func newKafkaProducer(c *Context) (producer.Producer, error) {
+func newKafkaProducer(c *Context) (streaming.Producer, error) {
 	brokers := c.StringSlice(FlagKafkaBrokers)
 	retry := c.Int(FlagKafkaRetry)
 
-	return producer.NewKafkaProducer(brokers, retry)
+	return streaming.NewKafkaProducer(brokers, retry)
 }
 
-func newS3Producer(c *Context) (producer.Producer, error) {
+func newS3Producer(c *Context) (streaming.Producer, error) {
 	endpoint := c.String(FlagS3Endpoint)
 	region := c.String(FlagS3Region)
 	bucket := c.String(FlagS3Bucket)
 
-	return producer.NewS3Producer(endpoint, region, bucket)
+	return streaming.NewS3Producer(endpoint, region, bucket)
 }
 
-func newS3Consumer(c *Context) (producer.Consumer, error) {
+func newS3Consumer(c *Context) (streaming.Consumer, error) {
 	endpoint := c.String(FlagS3Endpoint)
 	region := c.String(FlagS3Region)
 	bucket := c.String(FlagS3Bucket)
 
-	return producer.NewS3Consumer(endpoint, region, bucket)
+	return streaming.NewS3Consumer(endpoint, region, bucket)
 }
 
 // Logger ==================================

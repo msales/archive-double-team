@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/msales/double-team"
-	"github.com/msales/double-team/producer"
+	"github.com/msales/double-team/streaming"
 	"github.com/msales/double-team/server"
 	"github.com/msales/double-team/server/middleware"
 	"github.com/msales/pkg/stats"
@@ -36,7 +36,7 @@ func runServer(c *cli.Context) {
 		log.Fatal(err.Error())
 	}
 
-	app, err := newApplication(ctx, []producer.Producer{kafkaProducer, s3Producer}, c.Int(FlagQueueSize))
+	app, err := newApplication(ctx, []streaming.Producer{kafkaProducer, s3Producer}, c.Int(FlagQueueSize))
 	if err != nil {
 		log.Fatal(err.Error())
 	}
