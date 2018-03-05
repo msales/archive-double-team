@@ -90,6 +90,47 @@ var commands = []cli.Command{
 		}, commonFlags...),
 		Action: runServer,
 	},
+	{
+		Name:  "restore",
+		Usage: "Restore from S3",
+		Flags: append([]cli.Flag{
+			cli.IntFlag{
+				Name:   FlagQueueSize,
+				Value:  1000,
+				Usage:  "The queue size of the message buffers.",
+				EnvVar: "DOUBLE_TEAM_QUEUE",
+			},
+			cli.StringSliceFlag{
+				Name: FlagKafkaBrokers,
+				Usage: "The kafka seed brokers.",
+				EnvVar: "DOUBLE_TEAM_KAFKA_BROKERS",
+			},
+			cli.IntFlag{
+				Name: FlagKafkaRetry,
+				Value: 5,
+				Usage: "The number of times to retry producing a message.",
+				EnvVar: "DOUBLE_TEAM_KAFKA_RETRY",
+			},
+			cli.StringFlag{
+				Name: FlagS3Endpoint,
+				Value: "",
+				Usage: "The s3 endpoint. Only set for testing.",
+				EnvVar: "DOUBLE_TEAM_S3_ENDPOINT",
+			},
+			cli.StringFlag{
+				Name: FlagS3Region,
+				Usage: "The s3 bucket region.",
+				EnvVar: "DOUBLE_TEAM_S3_REGION",
+			},
+			cli.StringFlag{
+				Name: FlagS3Bucket,
+				Usage: "The s3 bucket.",
+				EnvVar: "DOUBLE_TEAM_S3_BUCKET",
+			},
+
+		}, commonFlags...),
+		Action: runRestore,
+	},
 }
 
 func main() {

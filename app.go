@@ -7,7 +7,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/msales/double-team/producer"
+	"github.com/msales/double-team/streaming"
 	"github.com/msales/pkg/stats"
 	"github.com/pkg/errors"
 )
@@ -22,8 +22,8 @@ var errUnhealthy = errors.New("app: service unhealthy")
 
 // Application represents the application.
 type Application struct {
-	producers []producer.Producer
-	messages  chan *producer.Message
+	producers []streaming.Producer
+	messages  chan *streaming.Message
 
 	statsTimer *time.Ticker
 
@@ -33,21 +33,21 @@ type Application struct {
 }
 
 // NewApplication creates an instance of Application.
-func NewApplication(ctx context.Context, producers []producer.Producer, queueSize int) *Application {
+func NewApplication(ctx context.Context, producers []streaming.Producer, queueSize int) *Application {
 	closeMutex := sync.WaitGroup{}
 	app := &Application{
 		producers:   producers,
-		messages:    make(chan *producer.Message, queueSize),
+		messages:    make(chan *streaming.Message, queueSize),
 		closeErrors: make(chan error),
 	}
 
-	channels := map[string]*chan *producer.Message{}
+	channels := map[string]*chan *streaming.Message{}
 
 	// Wire the producer chain
 	ch := &app.messages
 	for _, p := range app.producers {
 		channels[p.Name()] = ch
-		go func(ch *chan *producer.Message, p producer.Producer) {
+		go func(ch *chan *streaming.Message, p streaming.Producer) {
 			for msg := range *ch {
 				p.Input() <- msg
 				stats.Inc(ctx, "produced", 1, 1.0, map[string]string{"queue": p.Name()})
@@ -58,9 +58,9 @@ func NewApplication(ctx context.Context, producers []producer.Producer, queueSiz
 			closeMutex.Done()
 		}(ch, p)
 
-		newCh := make(chan *producer.Message, queueSize)
+		newCh := make(chan *streaming.Message, queueSize)
 		ch = &newCh
-		go func(ch *chan *producer.Message, p producer.Producer) {
+		go func(ch *chan *streaming.Message, p streaming.Producer) {
 			for err := range p.Errors() {
 				for _, msg := range err.Msgs {
 					*ch <- msg
@@ -72,8 +72,8 @@ func NewApplication(ctx context.Context, producers []producer.Producer, queueSiz
 	}
 
 	// Wire the black-hole
-	go func(ch *chan *producer.Message) {
-		for _ = range *ch {
+	go func(ch *chan *streaming.Message) {
+		for range *ch {
 			atomic.AddInt64(&app.errorCount, 1)
 			stats.Inc(ctx, "produced", 1, 1.0, map[string]string{"queue": "black-hole"})
 		}
@@ -97,7 +97,7 @@ func NewApplication(ctx context.Context, producers []producer.Producer, queueSiz
 
 // Send sends a message to the producer chain.
 func (a *Application) Send(topic string, data []byte) {
-	a.messages <- &producer.Message{
+	a.messages <- &streaming.Message{
 		Topic: topic,
 		Data:  data,
 	}
