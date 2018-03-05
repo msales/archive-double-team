@@ -11,8 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/segmentio/ksuid"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/apex/log"
+	"io/ioutil"
 )
 
 type s3Producer struct {
@@ -209,57 +208,55 @@ func NewS3Consumer(endpoint, region, bucket string) (Consumer, error) {
 	return c, nil
 }
 
-func (c *s3Consumer) Output(t time.Time) <-chan Messages {
+func (c *s3Consumer) Output(t time.Time) (<-chan Messages, <-chan error) {
 	ch := make(chan Messages, 10)
+	errors := make(chan error, 10)
+
 
 	go func() {
+		defer close(ch)
+		defer close(errors)
+
 		resp, err := c.client.ListObjects(&s3.ListObjectsInput{Bucket: aws.String(c.bucket)})
 		if err != nil {
-			log.Info(c.bucket + " // failed to list objects")
 			return
 		}
 
 		// loop bucket objects
 		for _, item := range resp.Contents {
-			if item.LastModified.After(t) || item.LastModified.Equal(t) { // FIXME easier?
-				log.Info(c.bucket + " // " + *item.Key + " // skipping due to modification time")
-				continue
+			if item.LastModified.After(t) {
+				// since ksuid are sorted by timestamp, we can stop here
+				break
 			}
-			if item.Size == aws.Int64(0) {
-				log.Info(c.bucket + " // " + *item.Key + " // skipping due to file size")
-				continue
-			}
-			downloader := s3manager.NewDownloader(c.sess)
-
-			w := &aws.WriteAtBuffer{}
-			_, err := downloader.Download(w, &s3.GetObjectInput{Bucket: aws.String(c.bucket), Key: item.Key})
+			object, err := c.client.GetObject(&s3.GetObjectInput{Bucket: aws.String(c.bucket), Key: item.Key})
 			if err != nil {
-				log.Error(err.Error())
 				continue
 			}
 
-			b := w.Bytes()
 			msgs := Messages{}
-			err = json.Unmarshal(b, &msgs)
+			buf, err := ioutil.ReadAll(object.Body)
 			if err != nil {
-				log.Error(err.Error())
+				errors <- err
+				continue
+			}
+
+			err = json.Unmarshal(buf, &msgs)
+			if err != nil {
+				errors <- err
 				continue
 			}
 
 			_, err = c.client.DeleteObject(&s3.DeleteObjectInput{Bucket: aws.String(c.bucket), Key: item.Key})
 			if err != nil {
-				log.Error(err.Error())
+				errors <- err
 				continue
 			}
-			log.Info(c.bucket + " // " + *item.Key + " // done")
 
 			ch <- msgs
 		}
-
-		close(ch)
 	}()
 
-	return ch
+	return ch, errors
 }
 
 func (c *s3Consumer) Close() error {
