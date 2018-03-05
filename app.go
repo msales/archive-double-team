@@ -73,7 +73,7 @@ func NewApplication(ctx context.Context, producers []streaming.Producer, queueSi
 
 	// Wire the black-hole
 	go func(ch *chan *streaming.Message) {
-		for _ = range *ch {
+		for range *ch {
 			atomic.AddInt64(&app.errorCount, 1)
 			stats.Inc(ctx, "produced", 1, 1.0, map[string]string{"queue": "black-hole"})
 		}
