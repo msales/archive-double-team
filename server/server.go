@@ -43,8 +43,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type produceMessage struct {
-	Topic string          `json:"topic"`
-	Data  json.RawMessage `json:"data"`
+	Topic string `json:"topic"`
+	Data  string `json:"data"`
 }
 
 // SendMessageHandler handles requests to send a message.
@@ -67,7 +67,7 @@ func (s *Server) SendMessageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.app.Send(msg.Topic, msg.Data)
+	s.app.Send(msg.Topic, []byte(msg.Data))
 
 	w.WriteHeader(200);
 }
