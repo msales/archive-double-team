@@ -136,6 +136,7 @@ var commands = []cli.Command{
 func main() {
 	app := cli.NewApp()
 	app.Name = "double-team"
+	app.Usage = "An HTTP Kafka producer"
 	app.Version = Version
 	app.Commands = commands
 
