@@ -7,8 +7,8 @@ import (
 	"github.com/msales/double-team"
 	"github.com/msales/double-team/streaming"
 	"github.com/msales/pkg/stats"
-	"gopkg.in/urfave/cli.v1"
 	"github.com/pkg/errors"
+	"gopkg.in/urfave/cli.v1"
 )
 
 func runRestore(c *cli.Context) {

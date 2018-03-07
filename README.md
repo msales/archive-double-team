@@ -1,5 +1,14 @@
 # Double-Team
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/msales/double-team)](https://goreportcard.com/report/github.com/msales/double-team)
+[![Build Status](https://travis-ci.org/msales/double-team.svg?branch=master)](https://travis-ci.org/msales/double-team)
+[![Docker build](https://img.shields.io/docker/automated/msales/double-team.svg)](https://hub.docker.com/r/msales/double-team/)
+[![Coverage Status](https://coveralls.io/repos/github/msales/double-team/badge.svg?branch=master)](https://coveralls.io/github/msales/double-team?branch=master)
+[![GitHub release](https://img.shields.io/github/release/msales/double-team.svg)](https://github.com/msales/double-team/releases)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/msales/double-team/master/LICENSE)
+
+## Synopsis
+
 A HTTP Kafka producer that handles outages.
 
 ## Usage
@@ -60,3 +69,7 @@ Accepts a JSON payload with the message topic and data.
 #### GET /health
 
 Gets the current health status of the server. Returns a 200 status code if the server is healthy, otherwise a 503 status code
+
+## License
+
+MIT-License. As is. No warranties whatsoever. Mileage may vary. Batteries not included.
