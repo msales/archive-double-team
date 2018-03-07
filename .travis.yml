@@ -8,7 +8,7 @@ before_install:
   - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
   - go get -u github.com/golang/lint/golint
   - go get github.com/mitchellh/gox
-  - github.com/codeclimate/test-reporter
+  - go get github.com/codeclimate/test-reporter
 
 before_script:
   - test-reporter before-build
