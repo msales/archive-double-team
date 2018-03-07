@@ -69,7 +69,7 @@ func (s *Server) SendMessageHandler(w http.ResponseWriter, r *http.Request) {
 
 	s.app.Send(msg.Topic, []byte(msg.Data))
 
-	w.WriteHeader(200);
+	w.WriteHeader(200)
 }
 
 // HealthHandler handles health requests.

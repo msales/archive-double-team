@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/msales/double-team"
-	"github.com/msales/double-team/streaming"
 	"github.com/msales/double-team/server"
 	"github.com/msales/double-team/server/middleware"
+	"github.com/msales/double-team/streaming"
 	"github.com/msales/pkg/stats"
 	"gopkg.in/urfave/cli.v1"
 )

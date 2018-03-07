@@ -20,7 +20,7 @@ const (
 	FlagQueueSize = "queue"
 
 	FlagKafkaBrokers = "kafka.brokers"
-	FlagKafkaRetry = "kafka.retry"
+	FlagKafkaRetry   = "kafka.retry"
 
 	FlagS3Endpoint = "s3.endpoint"
 	FlagS3Region   = "s3.region"
@@ -54,30 +54,30 @@ var commands = []cli.Command{
 				EnvVar: "DOUBLE_TEAM_QUEUE",
 			},
 			cli.StringSliceFlag{
-				Name: FlagKafkaBrokers,
-				Usage: "The kafka seed brokers.",
+				Name:   FlagKafkaBrokers,
+				Usage:  "The kafka seed brokers.",
 				EnvVar: "DOUBLE_TEAM_KAFKA_BROKERS",
 			},
 			cli.IntFlag{
-				Name: FlagKafkaRetry,
-				Value: 5,
-				Usage: "The number of times to retry producing a message.",
+				Name:   FlagKafkaRetry,
+				Value:  5,
+				Usage:  "The number of times to retry producing a message.",
 				EnvVar: "DOUBLE_TEAM_KAFKA_RETRY",
 			},
 			cli.StringFlag{
-				Name: FlagS3Endpoint,
-				Value: "",
-				Usage: "The s3 endpoint. Only set for testing.",
+				Name:   FlagS3Endpoint,
+				Value:  "",
+				Usage:  "The s3 endpoint. Only set for testing.",
 				EnvVar: "DOUBLE_TEAM_S3_ENDPOINT",
 			},
 			cli.StringFlag{
-				Name: FlagS3Region,
-				Usage: "The s3 bucket region.",
+				Name:   FlagS3Region,
+				Usage:  "The s3 bucket region.",
 				EnvVar: "DOUBLE_TEAM_S3_REGION",
 			},
 			cli.StringFlag{
-				Name: FlagS3Bucket,
-				Usage: "The s3 bucket.",
+				Name:   FlagS3Bucket,
+				Usage:  "The s3 bucket.",
 				EnvVar: "DOUBLE_TEAM_S3_BUCKET",
 			},
 			cli.StringFlag{
@@ -86,7 +86,6 @@ var commands = []cli.Command{
 				Usage:  "The port to run the server on.",
 				EnvVar: "DOUBLE_TEAM_PORT",
 			},
-
 		}, commonFlags...),
 		Action: runServer,
 	},
@@ -101,33 +100,32 @@ var commands = []cli.Command{
 				EnvVar: "DOUBLE_TEAM_QUEUE",
 			},
 			cli.StringSliceFlag{
-				Name: FlagKafkaBrokers,
-				Usage: "The kafka seed brokers.",
+				Name:   FlagKafkaBrokers,
+				Usage:  "The kafka seed brokers.",
 				EnvVar: "DOUBLE_TEAM_KAFKA_BROKERS",
 			},
 			cli.IntFlag{
-				Name: FlagKafkaRetry,
-				Value: 5,
-				Usage: "The number of times to retry producing a message.",
+				Name:   FlagKafkaRetry,
+				Value:  5,
+				Usage:  "The number of times to retry producing a message.",
 				EnvVar: "DOUBLE_TEAM_KAFKA_RETRY",
 			},
 			cli.StringFlag{
-				Name: FlagS3Endpoint,
-				Value: "",
-				Usage: "The s3 endpoint. Only set for testing.",
+				Name:   FlagS3Endpoint,
+				Value:  "",
+				Usage:  "The s3 endpoint. Only set for testing.",
 				EnvVar: "DOUBLE_TEAM_S3_ENDPOINT",
 			},
 			cli.StringFlag{
-				Name: FlagS3Region,
-				Usage: "The s3 bucket region.",
+				Name:   FlagS3Region,
+				Usage:  "The s3 bucket region.",
 				EnvVar: "DOUBLE_TEAM_S3_REGION",
 			},
 			cli.StringFlag{
-				Name: FlagS3Bucket,
-				Usage: "The s3 bucket.",
+				Name:   FlagS3Bucket,
+				Usage:  "The s3 bucket.",
 				EnvVar: "DOUBLE_TEAM_S3_BUCKET",
 			},
-
 		}, commonFlags...),
 		Action: runRestore,
 	},
@@ -136,6 +134,7 @@ var commands = []cli.Command{
 func main() {
 	app := cli.NewApp()
 	app.Name = "double-team"
+	app.Usage = "An HTTP Kafka producer"
 	app.Version = Version
 	app.Commands = commands
 

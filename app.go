@@ -27,9 +27,9 @@ type Application struct {
 
 	statsTimer *time.Ticker
 
-	errorCount    int64
-	unhealthy     bool
-	closeErrors   chan error
+	errorCount  int64
+	unhealthy   bool
+	closeErrors chan error
 }
 
 // NewApplication creates an instance of Application.

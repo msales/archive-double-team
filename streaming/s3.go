@@ -36,7 +36,7 @@ type s3Producer struct {
 func NewS3Producer(endpoint, region, bucket string) (Producer, error) {
 	// Configure to use Minio Server
 	config := &aws.Config{
-		Region:           aws.String(region),
+		Region: aws.String(region),
 	}
 	if endpoint != "" {
 		config.Endpoint = aws.String(endpoint)
@@ -148,7 +148,7 @@ func (p *s3Producer) dispatchFiles() {
 		if err != nil {
 			p.errors <- &Error{
 				Msgs: msgs,
-				Err: err,
+				Err:  err,
 			}
 			continue
 		}
@@ -163,7 +163,7 @@ func (p *s3Producer) dispatchFiles() {
 		if err != nil {
 			p.errors <- &Error{
 				Msgs: msgs,
-				Err: err,
+				Err:  err,
 			}
 		}
 	}
@@ -174,7 +174,7 @@ func newMessageBuffer(cap int) []*Message {
 }
 
 type s3Consumer struct {
-	sess *session.Session
+	sess   *session.Session
 	client *s3.S3
 	bucket string
 }
@@ -183,7 +183,7 @@ type s3Consumer struct {
 func NewS3Consumer(endpoint, region, bucket string) (Consumer, error) {
 	// Configure to use Minio Server
 	config := &aws.Config{
-		Region:           aws.String(region),
+		Region: aws.String(region),
 	}
 	if endpoint != "" {
 		config.Endpoint = aws.String(endpoint)
@@ -197,7 +197,7 @@ func NewS3Consumer(endpoint, region, bucket string) (Consumer, error) {
 	}
 
 	c := &s3Consumer{
-		sess: sess,
+		sess:   sess,
 		client: s3.New(sess),
 		bucket: bucket,
 	}
@@ -209,7 +209,6 @@ func NewS3Consumer(endpoint, region, bucket string) (Consumer, error) {
 func (c *s3Consumer) Output(t time.Time) (<-chan Messages, <-chan error) {
 	ch := make(chan Messages, 10)
 	errors := make(chan error, 10)
-
 
 	go func() {
 		defer close(ch)

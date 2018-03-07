@@ -62,7 +62,7 @@ type errorProducer struct {
 	errors chan *streaming.Error
 }
 
-func newErrorProducer() (streaming.Producer) {
+func newErrorProducer() streaming.Producer {
 	p := &errorProducer{
 		input:  make(chan *streaming.Message),
 		errors: make(chan *streaming.Error),
@@ -108,7 +108,7 @@ type funcProducer struct {
 	errors chan *streaming.Error
 }
 
-func newFuncProducer(fn func(message *streaming.Message)) (streaming.Producer) {
+func newFuncProducer(fn func(message *streaming.Message)) streaming.Producer {
 	p := &errorProducer{
 		input:  make(chan *streaming.Message),
 		errors: make(chan *streaming.Error),
