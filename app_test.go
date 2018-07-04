@@ -16,12 +16,13 @@ func TestSendsMessageToProducer(t *testing.T) {
 	p := newFuncProducer(func(m *streaming.Message) {
 		count++
 		assert.Equal(t, "test", m.Topic)
+		assert.Equal(t, "test", string(m.Key))
 		assert.Equal(t, "test", string(m.Data))
 	})
 	app := doubleteam.NewApplication(context.Background(), []streaming.Producer{p}, 1)
 	defer app.Close()
 
-	app.Send("test", []byte("test"))
+	app.Send("test", []byte("test"), []byte("test"))
 
 	// Wait for the message to be processed
 	time.Sleep(100 * time.Millisecond)
@@ -37,7 +38,7 @@ func TestIsUnhealthyIfRecordsAreBlackHoled(t *testing.T) {
 	err := app.IsHealthy()
 	assert.NoError(t, err)
 
-	app.Send("test", []byte("test"))
+	app.Send("test", []byte("test"), []byte("test"))
 
 	// Wait for the message to be processed
 	time.Sleep(100 * time.Millisecond)
