@@ -26,7 +26,7 @@ func TestServer_SendMessageHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		app := testApp{
-			send: func(topic string, data []byte) {},
+			send: func(topic string, key, data []byte) {},
 			isHealthy: func() error {
 				return tt.err
 			},
@@ -75,12 +75,12 @@ func TestNotFoundHandler(t *testing.T) {
 }
 
 type testApp struct {
-	send      func(topic string, data []byte)
+	send      func(topic string, key, data []byte)
 	isHealthy func() error
 }
 
-func (a testApp) Send(topic string, data []byte) {
-	a.send(topic, data)
+func (a testApp) Send(topic string, key, data []byte) {
+	a.send(topic, key, data)
 }
 
 func (a testApp) IsHealthy() error {

@@ -96,9 +96,10 @@ func NewApplication(ctx context.Context, producers []streaming.Producer, queueSi
 }
 
 // Send sends a message to the producer chain.
-func (a *Application) Send(topic string, data []byte) {
+func (a *Application) Send(topic string, key, data []byte) {
 	a.messages <- &streaming.Message{
 		Topic: topic,
+		Key:   key,
 		Data:  data,
 	}
 }

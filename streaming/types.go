@@ -8,6 +8,7 @@ type Messages []*Message
 // Message is the information to be sent through a Producer.
 type Message struct {
 	Topic string
+	Key   []byte
 	Data  []byte
 }
 

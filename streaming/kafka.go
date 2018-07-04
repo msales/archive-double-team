@@ -95,10 +95,16 @@ func (p *kafkaProducer) IsHealthy() bool {
 func (p *kafkaProducer) dispatchMessages() {
 	for msg := range p.input {
 		err := p.breaker.Run(func() {
-			p.producer.Input() <- &sarama.ProducerMessage{
+			m := &sarama.ProducerMessage{
 				Topic: msg.Topic,
 				Value: sarama.ByteEncoder(msg.Data),
 			}
+
+			if len(msg.Key) > 0 {
+				m.Key = sarama.ByteEncoder(msg.Key)
+			}
+
+			p.producer.Input() <- m
 		})
 
 		if err != nil {
@@ -119,6 +125,7 @@ func (p *kafkaProducer) dispatchErrors() {
 			Msgs: Messages{
 				{
 					Topic: err.Msg.Topic,
+					Key:   err.Msg.Key.(sarama.ByteEncoder),
 					Data:  err.Msg.Value.(sarama.ByteEncoder),
 				},
 			},

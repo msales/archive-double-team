@@ -50,7 +50,7 @@ func runRestore(c *cli.Context) {
 
 	for msgs := range messages {
 		for _, msg := range msgs {
-			app.Send(msg.Topic, msg.Data)
+			app.Send(msg.Topic, msg.Key, msg.Data)
 			stats.Inc(ctx, "consumed", 1, 1.0, map[string]string{})
 		}
 

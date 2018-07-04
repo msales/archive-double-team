@@ -10,7 +10,7 @@ import (
 // Application represents the main application.
 type Application interface {
 	// Send produces a message with fallback.
-	Send(topic string, data []byte)
+	Send(topic string, key, data []byte)
 	// IsHealthy checks the health of the Application.
 	IsHealthy() error
 }
@@ -44,6 +44,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 type produceMessage struct {
 	Topic string `json:"topic"`
+	Key   string `json:"key"`
 	Data  string `json:"data"`
 }
 
@@ -67,7 +68,7 @@ func (s *Server) SendMessageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.app.Send(msg.Topic, []byte(msg.Data))
+	s.app.Send(msg.Topic, []byte(msg.Key), []byte(msg.Data))
 
 	w.WriteHeader(200)
 }
