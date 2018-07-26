@@ -63,7 +63,7 @@ func (s *Server) SendMessageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if msg.Topic == "" || len(msg.Data) == 0 {
+	if msg.Topic == "" {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
