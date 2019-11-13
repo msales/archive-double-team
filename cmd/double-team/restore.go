@@ -6,7 +6,7 @@ import (
 
 	"github.com/msales/double-team"
 	"github.com/msales/double-team/streaming"
-	"github.com/msales/pkg/stats"
+	"github.com/msales/pkg/v3/stats"
 	"github.com/pkg/errors"
 	"gopkg.in/urfave/cli.v1"
 )
@@ -51,7 +51,7 @@ func runRestore(c *cli.Context) {
 	for msgs := range messages {
 		for _, msg := range msgs {
 			app.Send(msg.Topic, msg.Key, msg.Data)
-			stats.Inc(ctx, "consumed", 1, 1.0, map[string]string{})
+			stats.Inc(ctx, "consumed", 1, 1.0)
 		}
 
 		if err := shouldContinue(app, kafkaProducer); err != nil {

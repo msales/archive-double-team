@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/msales/pkg/httpx/middleware"
+	"github.com/msales/pkg/v3/httpx/middleware"
 )
 
 // WithContext wraps pkg WithContext.
