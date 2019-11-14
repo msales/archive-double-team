@@ -14,7 +14,7 @@ import (
 	"github.com/msales/double-team/server"
 	"github.com/msales/double-team/server/middleware"
 	"github.com/msales/double-team/streaming"
-	"github.com/msales/pkg/stats"
+	"github.com/msales/pkg/v3/stats"
 	"gopkg.in/urfave/cli.v1"
 )
 

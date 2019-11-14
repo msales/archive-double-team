@@ -6,8 +6,8 @@ import (
 
 	"github.com/msales/double-team"
 	"github.com/msales/double-team/streaming"
-	"github.com/msales/pkg/log"
-	"github.com/msales/pkg/stats"
+	"github.com/msales/pkg/v3/log"
+	"github.com/msales/pkg/v3/stats"
 	"gopkg.in/inconshreveable/log15.v2"
 )
 

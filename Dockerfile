@@ -1,18 +1,27 @@
 # Build container
-FROM golang:1.10 as builder
+FROM golang:1.13 as builder
 
-RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+# Optional github secrets
+ARG GITHUB_TOKEN
+ENV GO111MODULE on
 
-WORKDIR /go/src/github.com/msales/double-team/
+
+WORKDIR /app/double-team/
 COPY ./ .
-RUN dep ensure
 
-RUN CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-s' -o double-team ./cmd/double-team
+RUN test -n "${GITHUB_TOKEN}" && \
+    git config --global url."https://${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/" || \
+    true
+
+RUN go test ./...
+
+RUN CGO_ENABLED=0 GOOS=linux go build -a -ldflags "-s -X main.Version=$(git describe --tags --always)" -o double-team ./cmd/double-team
 
 # Run container
-FROM scratch
+FROM msales/alpine-base:3.8
 
-COPY --from=builder /go/src/github.com/msales/double-team/double-team .
+COPY --from=builder /app/double-team .
+COPY --from=builder /etc/ssl/certs /etc/ssl/certs
 
 ENV DOUBLE_TEAM_PORT "80"
 
