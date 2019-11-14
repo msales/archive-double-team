@@ -23,9 +23,10 @@ func newApplication(c *Context, producers []streaming.Producer, queueSize int) (
 
 func newKafkaProducer(c *Context) (streaming.Producer, error) {
 	brokers := c.StringSlice(FlagKafkaBrokers)
+	version := c.String(FlagKafkaVersion)
 	retry := c.Int(FlagKafkaRetry)
 
-	return streaming.NewKafkaProducer(brokers, retry)
+	return streaming.NewKafkaProducer(brokers, version, retry)
 }
 
 func newS3Producer(c *Context) (streaming.Producer, error) {

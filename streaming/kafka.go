@@ -19,8 +19,13 @@ type kafkaProducer struct {
 }
 
 // NewKafkaProducer creates a new producer that sends messages to Kafka.
-func NewKafkaProducer(brokers []string, retry int) (Producer, error) {
+func NewKafkaProducer(brokers []string, version string, retry int) (Producer, error) {
+	ver, err := sarama.ParseKafkaVersion(version)
+	if err != nil {
+		return nil, err
+	}
 	config := sarama.NewConfig()
+	config.Version = ver
 	config.Metadata.RefreshFrequency = 30 * time.Second
 	config.Producer.RequiredAcks = sarama.WaitForLocal
 	config.Producer.Compression = sarama.CompressionSnappy
