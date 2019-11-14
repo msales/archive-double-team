@@ -20,6 +20,7 @@ const (
 	FlagQueueSize = "queue"
 
 	FlagKafkaBrokers = "kafka.brokers"
+	FlagKafkaVersion = "kafka.version"
 	FlagKafkaRetry   = "kafka.retry"
 
 	FlagS3Endpoint = "s3.endpoint"
@@ -57,6 +58,11 @@ var commands = []cli.Command{
 				Name:   FlagKafkaBrokers,
 				Usage:  "The kafka seed brokers.",
 				EnvVar: "DOUBLE_TEAM_KAFKA_BROKERS",
+			},
+			cli.StringFlag{
+				Name:   FlagKafkaVersion,
+				Usage:  "Kafka version.",
+				EnvVar: "DOUBLE_TEAM_KAFKA_VERSION",
 			},
 			cli.IntFlag{
 				Name:   FlagKafkaRetry,
@@ -103,6 +109,11 @@ var commands = []cli.Command{
 				Name:   FlagKafkaBrokers,
 				Usage:  "The kafka seed brokers.",
 				EnvVar: "DOUBLE_TEAM_KAFKA_BROKERS",
+			},
+			cli.StringFlag{
+				Name:   FlagKafkaVersion,
+				Usage:  "Kafka version.",
+				EnvVar: "DOUBLE_TEAM_KAFKA_VERSION",
 			},
 			cli.IntFlag{
 				Name:   FlagKafkaRetry,
