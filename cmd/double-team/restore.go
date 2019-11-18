@@ -1,50 +1,51 @@
 package main
 
 import (
-	"log"
 	"time"
 
 	"github.com/msales/double-team"
 	"github.com/msales/double-team/streaming"
+	"github.com/msales/pkg/v3/clix"
+	"github.com/msales/pkg/v3/log"
 	"github.com/msales/pkg/v3/stats"
 	"github.com/pkg/errors"
 	"gopkg.in/urfave/cli.v1"
 )
 
 func runRestore(c *cli.Context) {
-	ctx, err := newContext(c)
+	ctx, err := clix.NewContext(c)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal(ctx, err.Error())
 	}
 
-	go stats.Runtime(ctx.stats)
+	go stats.RuntimeFromContext(ctx, 10*time.Second)
 
 	kafkaProducer, err := newKafkaProducer(ctx)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal(ctx, err.Error())
 	}
 
 	s3Producer, err := newS3Producer(ctx)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal(ctx, err.Error())
 	}
 
 	app, err := newApplication(ctx, []streaming.Producer{kafkaProducer, s3Producer}, c.Int(FlagQueueSize))
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal(ctx, err.Error())
 	}
 
 	s3Consumer, err := newS3Consumer(ctx)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal(ctx, err.Error())
 	}
 
-	ctx.logger.Info("Starting restore process")
+	log.Info(ctx, "Starting restore process")
 
 	messages, errs := s3Consumer.Output(time.Now())
 	go func() {
 		for err := range errs {
-			ctx.logger.Error(err.Error())
+			log.Error(ctx, err.Error())
 		}
 	}()
 
@@ -59,14 +60,14 @@ func runRestore(c *cli.Context) {
 		}
 	}
 
-	ctx.logger.Info("Draining queues")
+	log.Info(ctx, "Draining queues")
 
 	// Close the application
 	if err := app.Close(); err != nil {
-		ctx.logger.Error(err.Error())
+		log.Error(ctx, err.Error())
 	}
 
-	ctx.logger.Info("Done")
+	log.Info(ctx, "Done")
 }
 
 func shouldContinue(app *doubleteam.Application, p streaming.Producer) error {

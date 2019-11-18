@@ -30,23 +30,31 @@ The Double-Team server `./double-team server` can be configured with the followi
 
 | Flag | Description | Environment Variable |
 | ---- | ----------- | -------------------- |
-| --log.level | The log level to use (options: debug, info, warn, error). | DOUBLE_TEAM_LOG_LEVEL |
-| --stats | The statistics service to send metrics to. | DOUBLE_TEAM_STATS |
+| --port | The address to bind to for the http server. | PORT |
+| --log-level | The log level to use (options: debug, info, warn, error). | LOG_LEVEL |
+| --log-format | Log format to use (eg.: json, terminal). | LOG_FORMAT |
+| --log-tags | Additional tags for logs. | LOG_TAGS |
+| --stats-dsn | The statistics service to send metrics to (e.g.: l2met://, prometheus://0.0.0.0:8082). | STATS_DSN |
+| --stats-prefix | Prefix for statistics. | STATS_PREFIX |
+| --stats-tags | Additional tags for stats. | STATS_TAGS |
 | --kafka.brokers | The kafka seed brokers connect to. Format: 'ip:port' (multiple allowed). | DOUBLE_TEAM_KAFKA_BROKERS |
 | --kafka.version | Version of Kafka for producing messages: '2.3.0'. | DOUBLE_TEAM_KAFKA_VERSION |
 | --kafka.retry | The number of times to retry sending to Kafka. | DOUBLE_TEAM_KAFKA_RETRY |
 | --s3.endpoint | The S3 endpoint to use. This is mainly for debugging. | DOUBLE_TEAM_S3_ENDPOINT |
 | --s3.region | The S3 region the bucket exists in. | DOUBLE_TEAM_S3_REGION |
 | --s3.bucket | The S3 bucket to write messages to. | DOUBLE_TEAM_S3_BUCKET |
-| --port | The address to bind to for the http server. | DOUBLE_TEAM_PORT |
 
 ### Restore
 The Double-Team server `./double-team restore` can be configured with the following options:
 
 | Flag | Description | Environment Variable |
 | ---- | ----------- | -------------------- |
-| --log.level | The log level to use (options: debug, info, warn, error). | DOUBLE_TEAM_LOG_LEVEL |
-| --stats | The statistics service to send metrics to. | DOUBLE_TEAM_STATS |
+| --log-level | The log level to use (options: debug, info, warn, error). | LOG_LEVEL |
+| --log-format | Log format to use (eg.: json, terminal). | LOG_FORMAT |
+| --log-tags | Additional tags for logs. | LOG_TAGS |
+| --stats-dsn | The statistics service to send metrics to (e.g.: l2met://, prometheus://0.0.0.0:8082). | STATS_DSN |
+| --stats-prefix | Prefix for statistics. | STATS_PREFIX |
+| --stats-tags | Additional tags for stats. | STATS_TAGS |
 | --kafka.brokers | The kafka seed brokers connect to. Format: 'ip:port' (multiple allowed). | DOUBLE_TEAM_KAFKA_BROKERS |
 | --kafka.version | Version of Kafka for producing messages: '2.3.0'. | DOUBLE_TEAM_KAFKA_VERSION |
 | --kafka.retry | The number of times to retry sending to Kafka. | DOUBLE_TEAM_KAFKA_RETRY |
@@ -64,6 +72,7 @@ Accepts a JSON payload with the message topic and data.
 ```json
 {
 	"topic": "test",
+	"key": "key",
 	"data": "test data"
 }
 ```

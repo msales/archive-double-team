@@ -3,93 +3,65 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
-	"github.com/msales/double-team"
-	"github.com/msales/double-team/server"
-	"github.com/msales/double-team/server/middleware"
 	"github.com/msales/double-team/streaming"
+	"github.com/msales/pkg/v3/clix"
+	"github.com/msales/pkg/v3/log"
 	"github.com/msales/pkg/v3/stats"
 	"gopkg.in/urfave/cli.v1"
 )
 
 func runServer(c *cli.Context) {
-	ctx, err := newContext(c)
+	ctx, err := clix.NewContext(c)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal(ctx, err.Error())
 	}
 
-	go stats.Runtime(ctx.stats)
+	go stats.RuntimeFromContext(ctx, 10*time.Second)
 
 	kafkaProducer, err := newKafkaProducer(ctx)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal(ctx, err.Error())
 	}
 
 	s3Producer, err := newS3Producer(ctx)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal(ctx, err.Error())
 	}
 
 	app, err := newApplication(ctx, []streaming.Producer{kafkaProducer, s3Producer}, c.Int(FlagQueueSize))
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal(ctx, err.Error())
 	}
 
-	port := c.String(FlagPort)
+	port := c.String(clix.FlagPort)
 	srv := newServer(ctx, app)
 	h := http.Server{Addr: ":" + port, Handler: srv}
+	log.Info(ctx, fmt.Sprintf("Starting server on port %s", port))
 	go func() {
-		ctx.logger.Info(fmt.Sprintf("Starting server on port %s", port))
 		if err := h.ListenAndServe(); err != nil {
 			if err != http.ErrServerClosed {
-				log.Fatal(err)
+				log.Fatal(ctx, err)
 			}
 		}
 	}()
 
-	quit := listenForSignals()
-	<-quit
+	<-clix.WaitForSignals()
 
 	// Close the server
 	ctxServer, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := h.Shutdown(ctxServer); err != nil {
-		ctx.logger.Error(err.Error())
+		log.Error(ctx, err.Error())
 	}
-	ctx.logger.Info("Draining queues")
+	log.Info(ctx, "Draining queues")
 
 	// Close the application
 	if err := app.Close(); err != nil {
-		ctx.logger.Error(err.Error())
+		log.Error(ctx, err.Error())
 	}
 
-	ctx.logger.Info("Server stopped gracefully")
-}
-
-func newServer(ctx *Context, app *doubleteam.Application) http.Handler {
-	s := server.New(app)
-
-	h := middleware.Common(s)
-	return middleware.WithContext(ctx, h)
-}
-
-func listenForSignals() chan bool {
-	sigs := make(chan os.Signal, 1)
-	done := make(chan bool, 1)
-
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-	go func() {
-		<-sigs
-
-		done <- true
-	}()
-
-	return done
+	log.Info(ctx, "Server stopped gracefully")
 }
