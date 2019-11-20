@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/msales/double-team/streaming"
+	"github.com/msales/pkg/v3/log"
 	"github.com/msales/pkg/v3/stats"
 	"github.com/pkg/errors"
 )
@@ -50,7 +51,7 @@ func NewApplication(ctx context.Context, producers []streaming.Producer, queueSi
 		go func(ch *chan *streaming.Message, p streaming.Producer) {
 			for msg := range *ch {
 				p.Input() <- msg
-				stats.Inc(ctx, "produced", 1, 1.0, "queue", p.Name())
+				_ = stats.Inc(ctx, "produced", 1, 1.0, "queue", p.Name())
 			}
 
 			closeMutex.Add(1)
@@ -64,7 +65,8 @@ func NewApplication(ctx context.Context, producers []streaming.Producer, queueSi
 			for err := range p.Errors() {
 				for _, msg := range err.Msgs {
 					*ch <- msg
-					stats.Inc(ctx, "error", 1, 1.0, "queue", p.Name())
+					_ = stats.Inc(ctx, "error", 1, 1.0, "queue", p.Name())
+					log.Error(ctx, "error: ", msg, "queue", p.Name())
 				}
 			}
 			close(*ch)
@@ -75,7 +77,7 @@ func NewApplication(ctx context.Context, producers []streaming.Producer, queueSi
 	go func(ch *chan *streaming.Message) {
 		for range *ch {
 			atomic.AddInt64(&app.errorCount, 1)
-			stats.Inc(ctx, "produced", 1, 1.0, "queue", "black-hole")
+			_ = stats.Inc(ctx, "produced", 1, 1.0, "queue", "black-hole")
 		}
 
 		closeMutex.Wait()
@@ -86,8 +88,8 @@ func NewApplication(ctx context.Context, producers []streaming.Producer, queueSi
 	go func() {
 		for range app.statsTimer.C {
 			for k, ch := range channels {
-				stats.Gauge(ctx, "queue_length", float64(len(*ch)), 1.0, "queue", k)
-				stats.Gauge(ctx, "queue_length_max", float64(cap(*ch)), 1.0, "queue", k)
+				_ = stats.Gauge(ctx, "queue_length", float64(len(*ch)), 1.0, "queue", k)
+				_ = stats.Gauge(ctx, "queue_length_max", float64(cap(*ch)), 1.0, "queue", k)
 			}
 		}
 	}()
